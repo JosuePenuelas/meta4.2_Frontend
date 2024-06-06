@@ -2,14 +2,15 @@
   <v-card flat>
     <v-card-title>Responsables</v-card-title>
     <template v-slot:text>
-      <v-text-field v-model="search" label="Buscar" prepend-inner-icon="mdi-magnify" single-line variant="outlined" hide-details></v-text-field>
+      <v-text-field v-model="search" label="Buscar" prepend-inner-icon="mdi-magnify" single-line variant="outlined"
+        hide-details></v-text-field>
     </template>
 
     <v-container>
-      <v-btn class="mb-2 mr-2" color="primary" @click="openDialog('create')">
+      <v-btn class="mb-2 mr-2" color="primary" @click="showNewDialog = true">
         New Item
       </v-btn>
-      <v-btn class="mb-2 mr-2" color="secondary" @click="openDialog('update')">
+      <v-btn class="mb-2 mr-2" color="secondary" @click="showUpdateDialog = true">
         Update Item
       </v-btn>
       <v-btn class="mb-2" color="red" @click="showDeleteDialog = true">
@@ -17,9 +18,10 @@
       </v-btn>
     </v-container>
 
-    <v-data-table :headers="headers" :items="datos" :search="search" :sort-by="[{ key: 'id', order: 'asc' }]" :sort-by1="[{ key: 'title', order: 'asc' }]" :sort-by2="[{ key: 'body', order: 'asc' }]"></v-data-table>
+    <v-data-table :headers="headers" :items="datos" :search="search" :sort-by="[{ key: 'id', order: 'asc' }]"
+      :sort-by1="[{ key: 'title', order: 'asc' }]" :sort-by2="[{ key: 'body', order: 'asc' }]"></v-data-table>
 
-    <!-- Diálogo para eliminar -->
+    <!-- Diálogo para introducir ID a eliminar -->
     <v-dialog v-model="showDeleteDialog" max-width="500px">
       <v-card>
         <v-card-title>Eliminar Elemento</v-card-title>
@@ -33,23 +35,43 @@
       </v-card>
     </v-dialog>
 
-    <!-- Diálogo para crear/actualizar -->
-    <v-dialog v-model="showDialog" max-width="500px">
+    <!-- Diálogo para introducir nuevos datos -->
+    <v-dialog v-model="showNewDialog" max-width="500px">
       <v-card>
-        <v-card-title>{{ dialogMode === 'create' ? 'Nuevo Elemento' : 'Actualizar Elemento' }}</v-card-title>
+        <v-card-title>Nuevo Elemento</v-card-title>
         <v-card-text>
-          <v-text-field v-model.number="formData.id" v-if="dialogMode === 'update'" label="ID" type="number" @input="cargarDatosUpdate"></v-text-field>
-          <v-text-field v-model.number="formData.numEmpleado" label="Número de Empleado" type="number"></v-text-field>
-          <v-text-field v-model="formData.nombre" label="Nombre"></v-text-field>
-          <v-file-input v-model="formData.imagen" label="Imagen Responsable" @change="previewImage"></v-file-input>
+          <v-text-field v-model.number="newId" label="ID" type="number"></v-text-field>
+          <v-text-field v-model.number="newNumEmpleado" label="Número de Empleado" type="number"></v-text-field>
+          <v-text-field v-model="newNombre" label="Nombre"></v-text-field>
+          <v-file-input v-model="newImagenResponsable" label="Imagen Responsable" @change="previewImage"></v-file-input>
           <img :src="imagePreview" v-if="imagePreview" alt="Preview" style="max-width: 50%; max-height: 300px;">
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="dialogMode === 'create' ? crearNuevoItem() : actualizarItem()">Guardar</v-btn>
-          <v-btn text @click="showDialog = false">Cancelar</v-btn>
+          <v-btn color="primary" @click="crearNuevoItem">Crear</v-btn>
+          <v-btn text @click="showNewDialog = false">Cancelar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Diálogo para actualizar datos -->
+    <v-dialog v-model="showUpdateDialog" max-width="500px">
+      <v-card>
+        <v-card-title>Actualizar Elemento</v-card-title>
+        <v-card-text>
+          <v-text-field v-model.number="updateId" label="ID" type="number" @input="cargarDatosUpdate"></v-text-field>
+          <v-text-field v-model.number="updateNumEmpleado" label="Número de Empleado" type="number"></v-text-field>
+          <v-text-field v-model="updateNombre" label="Nombre"></v-text-field>
+          <v-file-input v-model="updateImagenResponsable" label="Imagen Responsable"
+            @change="previewImage"></v-file-input>
+          <img :src="imagePreview" v-if="imagePreview" alt="Preview" style="max-width: 50%; max-height: 300px;">
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="actualizarItem">Actualizar</v-btn>
+          <v-btn text @click="showUpdateDialog = false">Cancelar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-card>
 </template>
 
@@ -59,27 +81,32 @@ import { ref } from 'vue';
 const search = ref('');
 const headers = ref([
   { align: 'start', key: 'id', sortable: false, title: 'ID' },
-  { key: 'numEmpleado', title: 'Número de serie' },
-  { key: 'nombre', title: 'Número de inventario' },
+  { key: 'numEmpleado', title: 'Número de empleado' },
+  { key: 'nombre', title: 'Nombre' },
   { key: 'imagen', title: 'Imagen' },
 ]);
 
 const datos = ref([]);
 
 const imagePreview = ref('');
-const formData = ref({
-  id: '',
-  numEmpleado: '',
-  nombre: '',
-  imagen: null,
-});
 
-const dialogMode = ref('create');
-const showDialog = ref(false);
-
-// Para eliminar
+//para borrar
 const showDeleteDialog = ref(false);
 const idToDelete = ref('');
+
+//para nuevo dato
+const showNewDialog = ref(false);
+const newId = ref('');
+const newNumEmpleado = ref('');
+const newNombre = ref('');
+const newImagenResponsable = ref(null);
+
+//para nuevo dato
+const showUpdateDialog = ref(false);
+const updateId = ref('');
+const updateNumEmpleado = ref('');
+const updateNombre = ref('');
+const updateImagenResponsable = ref(null);
 
 async function obtenerDatos() {
   try {
@@ -95,34 +122,33 @@ async function obtenerDatos() {
 
 async function eliminar(id) {
   try {
-    await fetch(`https://localhost:4000/responsables/${id}`, {
+    const response = await fetch(`https://localhost:4000/responsables/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
     });
     obtenerDatos();
+
   } catch (error) {
-    console.error('Error al eliminar el elemento:', error);
+    console.error('Error al crear el delete:', error);
   }
 }
 
 async function crearNuevoItem() {
+  const formData = new FormData();
+  formData.append('numEmpleado', newNumEmpleado.value);
+  formData.append('nombre', newNombre.value);
+  if (newImagenResponsable.value) {
+    formData.append('imagen', newImagenResponsable.value[0]);
+  }
   try {
-    const form = new FormData();
-    form.append('imagen', formData.value.imagen);
     const response = await fetch('https://localhost:4000/responsables', {
       method: 'POST',
-      body: JSON.stringify({
-        id: formData.value.id,
-        numEmpleado: formData.value.numEmpleado,
-        nombre: formData.value.nombre,
-        imagen: form,
-      }),
+      body: formData,
       headers: {
-        'Content-type': 'application/json; charset=UTF-8',
         'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
       },
     });
-    showDialog.value = false;
+    showNewDialog.value = false;
     obtenerDatos();
   } catch (error) {
     console.error('Error al crear el nuevo post:', error);
@@ -130,39 +156,42 @@ async function crearNuevoItem() {
 }
 
 async function actualizarItem() {
+  const formData = new FormData();
+  formData.append('numEmpleado', updateNumEmpleado.value);
+  formData.append('nombre', updateNombre.value);
+  if (newImagenResponsable.value) {
+    formData.append('imagen', updateImagenResponsable.value[0]);
+  }
   try {
-    const form = new FormData();
-    form.append('imagen', formData.value.imagen);
-    const response = await fetch(`https://localhost:4000/responsables/${formData.value.id}`, {
+    const response = await fetch(`https://localhost:4000/responsables/${updateId.value}`, {
       method: 'PUT',
       body: JSON.stringify({
-        id: formData.value.id,
-        numEmpleado: formData.value.numEmpleado,
-        nombre: formData.value.nombre,
-        imagen: form,
+        id: updateId.value,
+        numEmpleado: updateNumEmpleado.value,
+        nombre: updateNombre.value,
+        imagen: formData,
       }),
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
         'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
       },
     });
-    showDialog.value = false;
+    showUpdateDialog.value = false;
     obtenerDatos();
   } catch (error) {
-    console.error('Error al actualizar el elemento:', error);
+    console.error('Error al crear el nuevo post:', error);
   }
 }
 
 async function cargarDatosUpdate() {
   try {
-    const response = await fetch(`https://localhost:4000/responsables/${formData.value.id}`, {
+    const response = await fetch(`https://localhost:4000/responsables/${updateId.value}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
     });
     const data = await response.json();
-    formData.value.numEmpleado = data.numEmpleado;
-    formData.value.nombre = data.nombre;
-    formData.value.imagen = data.imagen;
-    imagePreview.value = data.imagen ? `https://localhost:4000/${data.imagen}` : '';
+    updateNumEmpleado.value = data.numEmpleado;
+    updateNombre.value = data.nombre;
+    updateImagenResponsable.value = data.imagen;
   } catch (error) {
     console.error('Error al cargar los datos para actualizar:', error);
   }
@@ -179,20 +208,6 @@ function previewImage(event) {
   } else {
     imagePreview.value = '';
   }
-}
-
-function openDialog(mode) {
-  dialogMode.value = mode;
-  if (mode === 'create') {
-    formData.value.id = '';
-    formData.value.numEmpleado = '';
-    formData.value.nombre = '';
-    formData.value.imagen = null;
-    imagePreview.value = '';
-  } else if (mode === 'update') {
-    cargarDatosUpdate();
-  }
-  showDialog.value = true;
 }
 
 obtenerDatos();

@@ -142,8 +142,8 @@ async function actualizarItem() {
     formData.append('numSerie', itemNumSerie.value);
     formData.append('numInventario', itemNumInv.value);
     formData.append('descripcion', itemDesc.value);
-    formData.append('ubicacion', itemUbicacion.value);
-    formData.append('responsable', itemResponsable.value);
+    formData.append('ubicacionId', itemUbicacion.value);
+    formData.append('responsableId', itemResponsable.value);
     if (itemImagen.value) {
         formData.append('imagen', itemImagen.value[0]);
     }

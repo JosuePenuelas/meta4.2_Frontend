@@ -2,12 +2,13 @@
   <v-card flat>
     <v-card-title>Ubicaciones</v-card-title>
     <template v-slot:text>
-      <v-text-field v-model="search" label="Buscar" prepend-inner-icon="mdi-magnify" single-line variant="outlined" hide-details></v-text-field>
+      <v-text-field v-model="search" label="Buscar" prepend-inner-icon="mdi-magnify" single-line variant="outlined"
+        hide-details></v-text-field>
     </template>
 
     <v-container>
-      <v-btn class="mb-2 mr-2" color="primary" @click="openDialog('create')">New Item</v-btn>
-      <v-btn class="mb-2 mr-2" color="secondary" @click="openDialog('update')">Update Item</v-btn>
+      <v-btn class="mb-2 mr-2" color="primary" @click="showNewDialog = true">New Item</v-btn>
+      <v-btn class="mb-2 mr-2" color="secondary" @click="showUpdateDialog = true">Update Item</v-btn>
       <v-btn class="mb-2" color="red" @click="showDeleteDialog = true">Delete Item</v-btn>
     </v-container>
 
@@ -27,19 +28,37 @@
       </v-card>
     </v-dialog>
 
-    <!-- Diálogo para crear/actualizar -->
-    <v-dialog v-model="showDialog" max-width="500px">
+    <!-- Diálogo para nuevo elemento -->
+    <v-dialog v-model="showNewDialog" max-width="500px">
       <v-card>
-        <v-card-title>{{ dialogMode === 'create' ? 'Nuevo Elemento' : 'Actualizar Elemento' }}</v-card-title>
+        <v-card-title>Nuevo Elemento</v-card-title>
         <v-card-text>
-          <v-text-field v-if="dialogMode === 'update'" v-model.number="formData.id" label="ID" type="number" @input="cargarDatosUpdate"></v-text-field>
-          <v-text-field v-model="formData.descripcion" label="Descripción"></v-text-field>
-          <v-file-input v-model="formData.imagen" label="Imagen Ubicación" accept="image/*" @change="renderImg"></v-file-input>
+          <v-text-field v-model="newDescripcion" label="descripcion"></v-text-field>
+          <v-file-input v-model="newImagenUbi" label="Imagen Ubicación" accept="image/*"
+            @change="renderImg($event, 'new')"></v-file-input>
           <v-img v-if="imgUrl" :src="imgUrl" aspect-ratio="16/9"></v-img>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="dialogMode === 'create' ? crearNuevoItem() : actualizarItem()">Guardar</v-btn>
-          <v-btn text @click="showDialog = false">Cancelar</v-btn>
+          <v-btn color="primary" @click="crearNuevoItem">Crear</v-btn>
+          <v-btn text @click="showNewDialog = false">Cancelar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo para actualizar elemento -->
+    <v-dialog v-model="showUpdateDialog" max-width="500px">
+      <v-card>
+        <v-card-title>Actualizar Elemento</v-card-title>
+        <v-card-text>
+          <v-text-field v-model.number="updateId" label="ID" type="number" @input="cargarDatosUpdate"></v-text-field>
+          <v-text-field v-model="updateDescripcion" label="descripcion"></v-text-field>
+          <v-file-input v-model="updateImagenUbi" label="Imagen Ubicación" accept="image/*"
+            @change="renderImg($event, 'update')"></v-file-input>
+          <v-img v-if="imgUrl" :src="imgUrl" aspect-ratio="16/9"></v-img>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="actualizarItem">Actualizar</v-btn>
+          <v-btn text @click="showUpdateDialog = false">Cancelar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -58,20 +77,20 @@ const headers = ref([
 
 const datos = ref([]);
 
-// Consolidación de variables en formData
-const formData = ref({
-  id: '',
-  descripcion: '',
-  imagen: null,
-});
-
-// Variables de control de diálogos y modo
-const dialogMode = ref('create');
-const showDialog = ref(false);
+// Para eliminar
 const showDeleteDialog = ref(false);
-
-// ID para eliminar
 const idToDelete = ref('');
+
+// Para nuevo dato
+const showNewDialog = ref(false);
+const newDescripcion = ref('');
+const newImagenUbi = ref(null);
+
+// Para actualizar
+const showUpdateDialog = ref(false);
+const updateId = ref('');
+const updateDescripcion = ref('');
+const updateImagenUbi = ref(null);
 
 const imgUrl = ref("");
 
@@ -100,19 +119,19 @@ async function eliminar(id) {
 }
 
 async function crearNuevoItem() {
-  const formDataObject = new FormData();
-  formDataObject.append('descripcion', formData.value.descripcion);
-  if (formData.value.imagen) {
-    formDataObject.append('imagen', formData.value.imagen);
+  const formData = new FormData();
+  formData.append('descripcion', newDescripcion.value);
+  if (newImagenUbi.value) {
+    formData.append('imagen', newImagenUbi.value[0]);
   }
 
   try {
     await fetch('https://localhost:4000/ubicaciones', {
       method: 'POST',
-      body: formDataObject,
+      body: formData,
       headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
     });
-    showDialog.value = false;
+    showNewDialog.value = false;
     obtenerDatos();
   } catch (error) {
     console.error('Error al crear el nuevo elemento:', error);
@@ -120,19 +139,19 @@ async function crearNuevoItem() {
 }
 
 async function actualizarItem() {
-  const formDataObject = new FormData();
-  formDataObject.append('descripcion', formData.value.descripcion);
-  if (formData.value.imagen) {
-    formDataObject.append('imagen', formData.value.imagen);
+  const formData = new FormData();
+  formData.append('descripcion', updateDescripcion.value);
+  if (updateImagenUbi.value) {
+    formData.append('imagen', updateImagenUbi.value[0]);
   }
 
   try {
-    await fetch(`https://localhost:4000/ubicaciones/${formData.value.id}`, {
+    await fetch(`https://localhost:4000/ubicaciones/${updateId.value}`, {
       method: 'PUT',
-      body: formDataObject,
+      body: formData,
       headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
     });
-    showDialog.value = false;
+    showUpdateDialog.value = false;
     obtenerDatos();
   } catch (error) {
     console.error('Error al actualizar el elemento:', error);
@@ -141,18 +160,18 @@ async function actualizarItem() {
 
 async function cargarDatosUpdate() {
   try {
-    const response = await fetch(`https://localhost:4000/ubicaciones/${formData.value.id}`, {
+    const response = await fetch(`https://localhost:4000/ubicaciones/${updateId.value}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
     });
     const data = await response.json();
-    formData.value.descripcion = data.descripcion;
+    updateDescripcion.value = data.descripcion;
     imgUrl.value = data.imagen ? `https://localhost:4000/${data.imagen}` : '';
   } catch (error) {
     console.error('Error al cargar los datos para actualizar:', error);
   }
 }
 
-const renderImg = (event) => {
+const renderImg = (event, type) => {
   const file = event.target.files[0];
   if (!file) {
     imgUrl.value = "";
@@ -164,19 +183,6 @@ const renderImg = (event) => {
     imgUrl.value = reader.result;
   };
 };
-
-function openDialog(mode) {
-  dialogMode.value = mode;
-  if (mode === 'create') {
-    formData.value.id = '';
-    formData.value.descripcion = '';
-    formData.value.imagen = null;
-    imgUrl.value = '';
-  } else if (mode === 'update') {
-    formData.value.id = '';
-    showDialog.value = true;
-  }
-}
 
 obtenerDatos();
 </script>
