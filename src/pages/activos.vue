@@ -68,8 +68,11 @@ const headers = ref([
     { key: 'numSerie', title: 'Número de serie' },
     { key: 'numInventario', title: 'Número de inventario' },
     { key: 'descripcion', title: 'Descripción' },
-    { key: 'ubicacion', title: 'Ubicación' },
-    { key: 'responsable', title: 'Responsable' },
+    { key: 'Tags', title: 'Tags' },
+    { key: 'ubicacion', title: 'Ubicación id' },
+    { key: 'Ubicacion', title: 'Ubicación' },
+    { key: 'responsable', title: 'Responsable id' },
+    { key: 'Responsable', title: 'Responsable' },
     { key: 'imagen', title: 'Imagen' },
 ]);
 

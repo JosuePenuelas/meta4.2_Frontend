@@ -72,6 +72,7 @@ const search = ref('');
 const headers = ref([
   { align: 'start', key: 'id', sortable: false, title: 'ID' },
   { key: 'descripcion', title: 'Descripción' },
+  { key: 'Activos', title: 'activos' },
   { key: 'imagen', title: 'Imagen' },
 ]);
 
