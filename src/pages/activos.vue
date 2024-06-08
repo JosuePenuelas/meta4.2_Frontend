@@ -96,6 +96,10 @@ async function obtenerDatos() {
         });
         const data = await response.json();
         datos.value = data;
+        datos.value = data.map(item => ({
+            ...item,
+            imagen: `uploads/${item.imagen}` // Ajusta esto según la estructura de tu servidor
+        }));
     } catch (error) {
         console.error('Error al obtener datos:', error);
     }

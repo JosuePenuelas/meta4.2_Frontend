@@ -1,75 +1,32 @@
 <template>
-  <v-container class="fill-height">
-    <v-responsive class="align-center text-center fill-height">
-      <v-img height="300" src="@/assets/logo.svg" />
-
-      <div class="text-body-2 font-weight-light mb-n1">Welcome to</div>
-
-      <h1 class="text-h2 font-weight-bold">Vuetify</h1>
-
-      <div class="py-14" />
-
-      <v-row class="d-flex align-center justify-center">
-        <v-col cols="auto">
-          <v-btn
-            href="https://vuetifyjs.com/components/all/"
-            min-width="164"
-            rel="noopener noreferrer"
-            target="_blank"
-            variant="text"
-          >
-            <v-icon
-              icon="mdi-view-dashboard"
-              size="large"
-              start
-            />
-
-            Components
-          </v-btn>
-        </v-col>
-
-        <v-col cols="auto">
-          <v-btn
-            color="primary"
-            href="https://vuetifyjs.com/introduction/why-vuetify/#feature-guides"
-            min-width="228"
-            rel="noopener noreferrer"
-            size="x-large"
-            target="_blank"
-            variant="flat"
-          >
-            <v-icon
-              icon="mdi-speedometer"
-              size="large"
-              start
-            />
-
-            Get Started
-          </v-btn>
-        </v-col>
-
-        <v-col cols="auto">
-          <v-btn
-            href="https://community.vuetifyjs.com/"
-            min-width="164"
-            rel="noopener noreferrer"
-            target="_blank"
-            variant="text"
-          >
-            <v-icon
-              icon="mdi-account-group"
-              size="large"
-              start
-            />
-
-            Community
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-responsive>
-  </v-container>
+  <div id="app">
+    <v-app>
+      <v-container fluid pa-0>
+        <v-row align="center" justify="center" style="height:100vh" dense>
+          <v-col cols="12" lg="6" md="6"
+            class="grey lighten-2 fill-height d-flex flex-column justify-center align-center">
+            <v-card title="Servicio web REST de activos" variant="outlined" width="400" class="mt-16" color="indigo">
+              <v-card-text>
+                Servicio web REST para manipular los siguientes recursos relacionados con un sistema de control de activos:<br>
+                Activos, Ubicaciones y Responsables.
+                <br><br>
+                Inicia sesión o registrate para poder hacer uso de este sistema
+              </v-card-text>
+              <v-card-actions>
+                <v-btn @click="ingresar" append-icon="mdi-google">
+                  Inicia o registrate con Google
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-app>
+  </div>
 </template>
 
 <script setup>
-  //
+const ingresar = async () => {
+  window.location.href = 'https://localhost:4000/auth/google/';
+};
 </script>
