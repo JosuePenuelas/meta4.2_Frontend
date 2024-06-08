@@ -83,6 +83,7 @@ const headers = ref([
   { align: 'start', key: 'id', sortable: false, title: 'ID' },
   { key: 'numEmpleado', title: 'Número de empleado' },
   { key: 'nombre', title: 'Nombre' },
+  { key: 'Activos', title: 'activos' },
   { key: 'imagen', title: 'Imagen' },
 ]);
 
